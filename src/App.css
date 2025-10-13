@@ -1,0 +1,314 @@
+html {
+  scroll-behavior: smooth;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Hero Section Styling */
+.hero-section {
+  height: 90vh;
+  background: linear-gradient(to right, #0d6efd, #6610f2);
+  color: white;
+  padding: 0 10%;
+}
+
+.feature-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.how-it-works {
+  background-color: #f9fafc;
+}
+
+.editor-page {
+  background-color: #f9fafc;
+}
+
+.card {
+  border-radius: 12px !important;
+}
+
+button {
+  transition: transform 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+textarea:focus,
+select:focus {
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 5px rgba(13, 110, 253, 0.4) !important;
+}
+
+.editor-page {
+  background-color: #f9fafc;
+}
+
+button {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+.text-muted {
+  font-size: 0.9rem;
+}
+
+.card {
+  border-radius: 12px !important;
+}
+
+button:hover {
+  transform: scale(1.03);
+  transition: all 0.2s ease-in-out;
+}
+
+/* App.css */
+.home-page .hero-section {
+  height: 100vh;
+  background: linear-gradient(135deg, #0d6efd, #6c63ff);
+  color: white;
+}
+
+.feature-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.how-it-works .list-group-item {
+  border-left: 5px solid #0d6efd;
+}
+
+footer {
+  background-color: #111 !important;
+}
+
+/* Fix dropdown toggle arrow spacing */
+.custom-dropdown .dropdown-toggle::after {
+  display: none !important;
+}
+
+.profile-avatar {
+  transition: transform 0.3s ease;
+}
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.profile-avatar {
+  transition: all 0.3s ease;
+}
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* ---------------------------- */
+/* Profile Page Styling (CodeBuddy) */
+/* ---------------------------- */
+
+.profile-card {
+  background: #ffffff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  border: 3px solid #0d6efd;
+  transition: all 0.3s ease-in-out;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+}
+
+.profile-card .btn-primary {
+  font-weight: 500;
+  padding: 8px 25px;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+.profile-card .btn-primary:hover {
+  background-color: #0b5ed7;
+}
+
+.profile-card .btn-outline-danger {
+  border-radius: 20px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.profile-card .btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+.profile-card .form-control {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.profile-card .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+}
+
+.profile-card hr {
+  border-top: 2px solid #f1f1f1;
+}
+
+/* Responsive Fix */
+@media (max-width: 768px) {
+  .profile-card {
+    padding: 20px;
+  }
+  .profile-avatar {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+
+/* ----------------------------- */
+/* Dashboard Page Styling (CodeBuddy) */
+/* ----------------------------- */
+
+.dashboard-page {
+  background-color: #f9fafc;
+  min-height: 100vh;
+}
+
+.dashboard-card {
+  border-radius: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.leaderboard-list li {
+  background: #f1f5ff;
+  margin: 6px 0;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.leaderboard-list li:hover {
+  background: #dbe8ff;
+}
+
+/* Make charts and cards responsive */
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 15px;
+  }
+
+  .dashboard-card {
+    padding: 10px;
+  }
+
+  .leaderboard-list li {
+    font-size: 0.9rem;
+  }
+}
+
+/* ---------------------------- */
+/* Auth Pages (Login/Signup) */
+/* ---------------------------- */
+
+.auth-page {
+  background-color: #f9fafc;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.form-control {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary {
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+}
