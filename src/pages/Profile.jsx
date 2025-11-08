@@ -1,39 +1,78 @@
 // src/pages/Profile.jsx
+import API_URL from "../apiConfig";
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Button, Form } from "react-bootstrap";
+import { Card, Row, Col, Button, Form, Spinner } from "react-bootstrap";
 import { FaCamera } from "react-icons/fa";
 
+// --- 1. Imports for API and State ---
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+import toast from "react-hot-toast";
+
 function Profile() {
-  const [user, setUser] = useState(null);
+  // --- 2. Get user info and 'login' (which we use to update) from context ---
+  const { userInfo, login } = useAuth();
+
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
-  const [profilePic, setProfilePic] = useState(null);
+  const [profilePic, setProfilePic] = useState(null); // Keep UI state for pic
 
+  // --- 3. Loading states ---
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // --- 4. Fetch Profile Data on Load ---
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (currentUser) {
-      setUser(currentUser);
-      setName(currentUser.name || "");
-      setBio(currentUser.bio || "");
-      setProfilePic(currentUser.profilePic || null);
+    const fetchUserProfile = async () => {
+      try {
+        const { data } = await axios.get(
+          `${API_URL}/api/users/profile`,
+          { withCredentials: true } // This sends our auth cookie
+        );
+
+        // Populate state with data from the database
+        setName(data.name);
+        setBio(data.bio || ""); // Use default if bio is null
+        // setProfilePic(data.profilePic); // We'll add this feature later
+        setLoadingProfile(false);
+      } catch (error) {
+        toast.error("Could not load profile data.");
+        console.error("Fetch profile error:", error);
+        setLoadingProfile(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []); // Empty array means this runs once when the component mounts
+
+  // --- 5. Update Profile Data on Save ---
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const { data } = await axios.put(
+        `${API_URL}/api/users/profile`,
+        { name, bio }, // Send updated name and bio
+        { withCredentials: true }
+      );
+
+      // --- 6. Update the global state ---
+      // We re-use our 'login' function from context to update
+      // the global state and localStorage with the new user data.
+      login(data);
+
+      toast.success("Profile updated successfully!");
+      setIsSaving(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not save profile.");
+      console.error("Save profile error:", error);
+      setIsSaving(false);
     }
-  }, []);
-
-  const handleSave = () => {
-    if (!user) return;
-
-    const updatedUser = { ...user, name, bio, profilePic };
-    setUser(updatedUser);
-    localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    users = users.map((u) => (u.email === user.email ? updatedUser : u));
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("✅ Profile updated successfully!");
   };
 
+  // --- 7. Deferring profile pic logic for now ---
   const handleImageUpload = (e) => {
+    toast.info("Profile picture uploads are a feature coming soon!");
+    // This UI-only part still shows the user their selection
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -43,23 +82,28 @@ function Profile() {
   };
 
   const handleRemovePhoto = () => {
+    toast.info("Profile picture uploads are a feature coming soon!");
     setProfilePic(null);
-    if (user) {
-      const updatedUser = { ...user, profilePic: null };
-      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      users = users.map((u) => (u.email === user.email ? updatedUser : u));
-      localStorage.setItem("users", JSON.stringify(users));
-    }
   };
 
-  const getInitial = (name, email) => {
-    if (name && name.length > 0) return name.charAt(0).toUpperCase();
-    return email.charAt(0).toUpperCase();
+  // Helper function for the avatar initial
+  const getInitial = (nameStr, emailStr) => {
+    if (nameStr && nameStr.length > 0) return nameStr.charAt(0).toUpperCase();
+    if (emailStr) return emailStr.charAt(0).toUpperCase();
+    return "?";
   };
 
-  if (!user) {
-    return <p className="text-center mt-5">⚠️ No user logged in.</p>;
+  // --- 8. Show a loading spinner ---
+  if (loadingProfile) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "80vh" }}
+      >
+        <Spinner animation="border" variant="primary" />
+        <p className="ms-3">Loading your profile...</p>
+      </div>
+    );
   }
 
   return (
@@ -72,7 +116,7 @@ function Profile() {
               transition: "transform 0.3s ease, box-shadow 0.3s ease",
             }}
           >
-            {/* Profile Picture Section */}
+            {/* Profile Picture Section (UI is unchanged) */}
             <div className="text-center mb-4">
               <div className="position-relative d-inline-block">
                 {profilePic ? (
@@ -97,7 +141,7 @@ function Profile() {
                       transition: "background 0.3s ease",
                     }}
                   >
-                    {getInitial(user.name, user.email)}
+                    {getInitial(userInfo.name, userInfo.email)}
                   </div>
                 )}
                 <label
@@ -127,10 +171,11 @@ function Profile() {
                 />
               </div>
 
+              {/* --- 9. Use 'userInfo' for non-editable fields --- */}
               <h4 className="fw-bold text-primary mt-3 mb-1">
-                {user.name || "Your Name"}
+                {userInfo.name}
               </h4>
-              <p className="text-muted mb-1">{user.email}</p>
+              <p className="text-muted mb-1">{userInfo.email}</p>
 
               {profilePic && (
                 <Button
@@ -169,15 +214,33 @@ function Profile() {
               </Form.Group>
 
               <div className="text-center">
-                <Button variant="primary" onClick={handleSave}>
-                  Save Changes
+                {/* --- 10. Update Save Button with loading state --- */}
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />{" "}
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
               </div>
             </Form>
 
             <hr className="mt-4" />
 
-            {/* User Stats Section */}
+            {/* User Stats Section (Still hard-coded for now) */}
             <Row className="text-center">
               <Col>
                 <h6 className="text-muted">Problems Solved</h6>

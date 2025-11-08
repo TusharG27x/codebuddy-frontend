@@ -1,12 +1,14 @@
 // src/components/ProtectedRoute.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // 1. Import useAuth
 
 function ProtectedRoute({ children }) {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const { userInfo } = useAuth(); // 2. Get userInfo from our context
 
-  if (!currentUser) {
-    alert("⚠️ Please login to access this page!");
+  // 3. Check for userInfo instead of 'currentUser'
+  if (!userInfo) {
+    // We can remove the alert. A simple redirect is cleaner.
     return <Navigate to="/login" />;
   }
 

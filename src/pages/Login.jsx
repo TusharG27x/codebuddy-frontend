@@ -1,9 +1,14 @@
 // src/pages/Login.jsx
+import API_URL from "../apiConfig";
 import React, { useState } from "react";
 import { Form, Button, Card, Container, Modal } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
+// --- 1. Imports for our API logic ---
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -13,22 +18,37 @@ function Login() {
   const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(
-      (u) => u.email === email && u.password === password
-    );
+  // --- 2. Add loading state and get auth context ---
+  const [loading, setLoading] = useState(false);
+  const auth = useAuth(); // Get login function from our context
 
-    if (user) {
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      toast.success("Login successful! 🚀");
+  // --- 3. This is the updated login handler ---
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true); // Start loading
+
+    try {
+      // 4. Call our backend API
+      const response = await axios.post(
+        `${API_URL}/api/users/login`,
+        { email, password },
+        { withCredentials: true } // CRITICAL: This sends the auth cookie
+      );
+
+      // 5. On success, update global state
+      auth.login(response.data); // This updates context and localStorage
+      toast.success(`Welcome back, ${response.data.name}! 🚀`);
       navigate("/dashboard");
-    } else {
-      toast.error("Invalid email or password!");
+    } catch (err) {
+      // 6. On failure, show an error toast
+      const message =
+        err.response?.data?.message || "Invalid email or password!";
+      toast.error(message);
+      setLoading(false); // Stop loading
     }
   };
 
+  // --- 7. "Forgot Password" logic remains unchanged for now ---
   const handlePasswordReset = () => {
     let users = JSON.parse(localStorage.getItem("users")) || [];
     const userIndex = users.findIndex((u) => u.email === resetEmail);
@@ -64,7 +84,7 @@ function Login() {
               </h3>
               <Form onSubmit={handleLogin}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
+                  {/* ... (email input - no change) ... */}
                   <Form.Control
                     type="email"
                     placeholder="Enter your email"
@@ -75,7 +95,7 @@ function Login() {
                 </Form.Group>
 
                 <Form.Group className="mb-2">
-                  <Form.Label>Password</Form.Label>
+                  {/* ... (password input - no change) ... */}
                   <Form.Control
                     type="password"
                     placeholder="Enter your password"
@@ -86,6 +106,7 @@ function Login() {
                 </Form.Group>
 
                 <div className="text-end mb-3">
+                  {/* ... (forgot password link - no change) ... */}
                   <span
                     className="text-primary small"
                     style={{ cursor: "pointer" }}
@@ -95,11 +116,18 @@ function Login() {
                   </span>
                 </div>
 
-                <Button type="submit" variant="primary" className="w-100 mb-3">
-                  Login
+                {/* --- 8. Update Button for loading state --- */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 mb-3"
+                  disabled={loading} // Disable button while loading
+                >
+                  {loading ? "Logging in..." : "Login"}
                 </Button>
 
                 <p className="text-center text-muted mb-0">
+                  {/* ... (signup link - no change) ... */}
                   Don’t have an account?{" "}
                   <span
                     className="text-primary fw-semibold"
@@ -115,8 +143,9 @@ function Login() {
         </motion.div>
       </Container>
 
-      {/* Forgot Password Modal */}
+      {/* --- Forgot Password Modal (no change) --- */}
       <Modal show={showReset} onHide={() => setShowReset(false)} centered>
+        {/* ... (rest of your modal code) ... */}
         <Modal.Header closeButton>
           <Modal.Title>Reset Password</Modal.Title>
         </Modal.Header>

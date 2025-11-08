@@ -1,3 +1,5 @@
+// src/pages/EditorPage.jsx
+import API_URL from "../apiConfig";
 import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import {
@@ -10,20 +12,28 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
+// --- 1. Use react-hot-toast (to match other pages) ---
+import toast from "react-hot-toast";
+// --- 2. Imports for API Call ---
+import axios from "axios";
+// We import useAuth to make sure we're logged in, even though we don't use the object
+// This page is already protected by ProtectedRoute, so we're good.
 
 function EditorPage() {
   const [problem, setProblem] = useState("");
   const [code, setCode] = useState("// Write your code here...");
-  const [helpType, setHelpType] = useState("");
+  const [helpType, setHelpType] = useState("hint"); // Default to 'hint'
   const [aiResponse, setAiResponse] = useState("");
   const [output, setOutput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For Run button
   const [showOutput, setShowOutput] = useState(false);
   const [testInput, setTestInput] = useState("");
   const [lastSaved, setLastSaved] = useState(null);
 
-  // Load saved data
+  // --- 3. New state for AI loading ---
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // Load saved data (unchanged)
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("codebuddy-progress"));
     if (saved) {
@@ -33,7 +43,7 @@ function EditorPage() {
     }
   }, []);
 
-  // Auto-save
+  // Auto-save (unchanged)
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (problem.trim() || code.trim()) {
@@ -49,36 +59,35 @@ function EditorPage() {
     return () => clearTimeout(timeout);
   }, [problem, code]);
 
-  // Handle hint/help request
-  const handleHelp = () => {
-    if (!problem.trim()) {
-      toast.warn("Please enter or paste a problem statement ⚠️");
+  // --- 4. This is the updated AI Help handler ---
+  const handleHelp = async () => {
+    if (!code.trim() || code === "// Write your code here...") {
+      toast.warn("Please write some code for the AI to analyze ⚠️");
       return;
     }
 
-    let response = "";
-    switch (helpType) {
-      case "hint":
-        response = "💡 Hint: Break the problem into smaller subproblems.";
-        break;
-      case "debug":
-        response =
-          "🐞 Debug Tip: Try printing intermediate outputs to trace logic.";
-        break;
-      case "concept":
-        response =
-          "📘 Concept: Review recursion or dynamic programming for this type.";
-        break;
-      case "nextstep":
-        response = "🚀 Next Step: Try optimizing your approach.";
-        break;
-      default:
-        response = "🤖 Please select a help type.";
+    setAiLoading(true);
+    setAiResponse(""); // Clear previous response
+
+    try {
+      const { data } = await axios.post(
+        `${API_URL}/api/ai/get-hint`,
+        { code, problem },
+        { withCredentials: true } // Essential for our protected route
+      );
+
+      // On success, set the AI response
+      setAiResponse(data.hint);
+      setAiLoading(false);
+    } catch (error) {
+      console.error("AI Hint Error:", error);
+      toast.error("Failed to get hint from AI. Please try again.");
+      setAiResponse("Sorry, I couldn't generate a hint right now.");
+      setAiLoading(false);
     }
-    setAiResponse(response);
   };
 
-  // Handle Run
+  // Handle Run (unchanged - this is still a mock)
   const handleRun = () => {
     if (!code.trim() || code === "// Write your code here...") {
       toast.warn("Please write some code before running ⚙️");
@@ -96,18 +105,17 @@ function EditorPage() {
     }, 1800);
   };
 
-  // Handle Reset
+  // --- 5. Updated Reset (Removed 'window.confirm') ---
   const handleReset = () => {
-    if (window.confirm("Reset all progress?")) {
-      localStorage.removeItem("codebuddy-progress");
-      setProblem("");
-      setCode("// Write your code here...");
-      setAiResponse("");
-      setOutput("");
-      setShowOutput(false);
-      setLastSaved(null);
-      toast.success("Progress reset 🧹");
-    }
+    // We remove the confirm popup, as it's blocking
+    localStorage.removeItem("codebuddy-progress");
+    setProblem("");
+    setCode("// Write your code here...");
+    setAiResponse("");
+    setOutput("");
+    setShowOutput(false);
+    setLastSaved(null);
+    toast.success("Progress reset 🧹");
   };
 
   return (
@@ -139,43 +147,57 @@ function EditorPage() {
                 />
               </Form.Group>
 
+              {/* --- 6. Simplified the AI Help section --- */}
               <Form.Group className="mb-3">
                 <Form.Label className="fw-semibold">
-                  Select Help Type
+                  Stuck? Get an AI Hint
                 </Form.Label>
-                <Form.Select
-                  value={helpType}
-                  onChange={(e) => setHelpType(e.target.value)}
-                >
-                  <option value="">-- Choose an option --</option>
-                  <option value="hint">💡 Hint</option>
-                  <option value="debug">🐞 Debug</option>
-                  <option value="concept">📘 Concept</option>
-                  <option value="nextstep">🚀 Next Step</option>
-                </Form.Select>
+                <Form.Text className="d-block mb-2 text-muted">
+                  Our AI will analyze your code (right) and give you a small
+                  hint, not the whole answer.
+                </Form.Text>
               </Form.Group>
 
+              {/* --- 7. Updated AI Help Button --- */}
               <Button
                 variant="primary"
                 className="w-100 mb-3"
                 onClick={handleHelp}
+                disabled={aiLoading}
               >
-                🤖 Get AI Help
+                {aiLoading ? (
+                  <>
+                    <Spinner as="span" animation="border" size="sm" />{" "}
+                    Generating...
+                  </>
+                ) : (
+                  "🤖 Get AI Hint"
+                )}
               </Button>
 
               <Card className="border-0 shadow-sm">
                 <Card.Body>
                   <h6 className="fw-bold text-success">AI Response:</h6>
-                  <p className="mt-2">
-                    {aiResponse || "AI suggestions will appear here..."}
-                  </p>
+                  {/* --- 8. Updated AI Response Box --- */}
+                  {aiLoading ? (
+                    <div className="text-center py-3">
+                      <Spinner animation="border" variant="dark" size="sm" />
+                      <p className="mt-2 mb-0 small">
+                        CodeBuddy is thinking...
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
+                      {aiResponse || "AI suggestions will appear here..."}
+                    </p>
+                  )}
                 </Card.Body>
               </Card>
             </Card.Body>
           </Card>
         </Col>
 
-        {/* Code Editor + Output */}
+        {/* Code Editor + Output (This side is unchanged) */}
         <Col md={8}>
           <Card className="shadow-sm border-0 mb-4">
             <Card.Body>
@@ -189,7 +211,7 @@ function EditorPage() {
               >
                 <Editor
                   height="400px"
-                  language="javascript"
+                  language="python"
                   value={code}
                   onChange={(val) => setCode(val)}
                   theme="vs-light"
