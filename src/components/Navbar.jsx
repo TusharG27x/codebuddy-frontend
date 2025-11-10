@@ -1,4 +1,5 @@
 // src/components/Navbar.jsx
+import API_URL from "../apiConfig";
 import React from "react";
 import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ function AppNavbar() {
     try {
       // Call the backend endpoint to clear the cookie
       await axios.post(
-        "http://localhost:5000/api/users/logout",
+        `${API_URL}/api/users/logout`,
         {},
         { withCredentials: true }
       );
