@@ -132,20 +132,19 @@ function Home() {
             <Col md={10}>
               <ol className="list-group list-group-numbered shadow-sm">
                 <li className="list-group-item">
-                  Login or Sign Up to your CodeBuddy account.
+                  <strong>Sign Up or Login</strong> to your CodeBuddy account.
                 </li>
                 <li className="list-group-item">
-                  Paste your coding problem or upload your code.
+                  Go to the <strong>Editor</strong> and paste your problem
+                  statement and your code.
                 </li>
                 <li className="list-group-item">
-                  Select what kind of help you need — Hint, Debug, or Concept
-                  Explanation.
+                  Stuck? Click <strong>"Get AI Hint"</strong> to receive a
+                  smart, guided suggestion.
                 </li>
                 <li className="list-group-item">
-                  AI analyzes and gives guided feedback.
-                </li>
-                <li className="list-group-item">
-                  Improve your code and track progress over time.
+                  Track your submissions and watch your progress on the{" "}
+                  <strong>Dashboard!</strong>
                 </li>
               </ol>
             </Col>

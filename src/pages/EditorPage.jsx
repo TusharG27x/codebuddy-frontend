@@ -223,7 +223,7 @@ function EditorPage() {
                 />
               </div>
 
-              <Form.Group className="mt-3">
+              {/* <Form.Group className="mt-3">
                 <Form.Label className="fw-semibold">🧪 Custom Input</Form.Label>
                 <Form.Control
                   as="textarea"
@@ -232,7 +232,7 @@ function EditorPage() {
                   value={testInput}
                   onChange={(e) => setTestInput(e.target.value)}
                 />
-              </Form.Group>
+              </Form.Group> */}
 
               <div className="d-flex justify-content-between align-items-center mt-3">
                 <small className="text-muted">
@@ -247,14 +247,14 @@ function EditorPage() {
                   >
                     🧹 Reset
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="secondary"
                     size="sm"
                     className="me-2"
                     onClick={handleRun}
                   >
                     ▶ Run
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
 
