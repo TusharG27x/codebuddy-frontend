@@ -5,7 +5,7 @@ import { FaCamera } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import toast from "react-hot-toast";
-import API_URL from "../apiConfig"; // <-- This should be here
+import API_URL from "../apiConfig";
 
 function Profile() {
   const { userInfo, login } = useAuth();
@@ -15,15 +15,11 @@ function Profile() {
   const [profilePic, setProfilePic] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  // --- 1. ADD STATE FOR STATS ---
   const [stats, setStats] = useState(null);
 
-  // --- 2. UPDATE USEEFFECT TO FETCH BOTH ---
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch profile and stats at the same time
         const [profileRes, statsRes] = await Promise.all([
           axios.get(`${API_URL}/api/users/profile`, { withCredentials: true }),
           axios.get(`${API_URL}/api/dashboard/stats`, {
@@ -31,13 +27,9 @@ function Profile() {
           }),
         ]);
 
-        // Set profile data
         setName(profileRes.data.name);
         setBio(profileRes.data.bio || "");
-
-        // Set stats data
         setStats(statsRes.data);
-
         setLoadingProfile(false);
       } catch (error) {
         toast.error("Could not load profile data.");
@@ -47,9 +39,8 @@ function Profile() {
     };
 
     fetchData();
-  }, []); // Runs once on mount
+  }, []);
 
-  // --- (handleSave function is unchanged) ---
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -58,7 +49,7 @@ function Profile() {
         { name, bio },
         { withCredentials: true }
       );
-      login(data);
+      login(data); // This updates the global state (and userInfo in the navbar)
       toast.success("Profile updated successfully!");
       setIsSaving(false);
     } catch (error) {
@@ -67,7 +58,6 @@ function Profile() {
     }
   };
 
-  // --- (Other functions are unchanged) ---
   const handleImageUpload = (e) => {
     toast.info("Profile picture uploads are a feature coming soon!");
     const file = e.target.files[0];
@@ -77,19 +67,19 @@ function Profile() {
       reader.readAsDataURL(file);
     }
   };
+
   const handleRemovePhoto = () => {
     toast.info("Profile picture uploads are a feature coming soon!");
     setProfilePic(null);
   };
+
   const getInitial = (nameStr, emailStr) => {
     if (nameStr && nameStr.length > 0) return nameStr.charAt(0).toUpperCase();
     if (emailStr) return emailStr.charAt(0).toUpperCase();
     return "?";
   };
 
-  // --- 3. UPDATE LOADING SPINNER ---
   if (loadingProfile || !stats) {
-    // Wait for profile AND stats
     return (
       <div
         className="d-flex justify-content-center align-items-center"
@@ -101,7 +91,6 @@ function Profile() {
     );
   }
 
-  // --- (Rest of the JSX is mostly the same) ---
   return (
     <div className="container mt-5 mb-5">
       <Row className="justify-content-center">
@@ -112,21 +101,102 @@ function Profile() {
               transition: "transform 0.3s ease, box-shadow 0.3s ease",
             }}
           >
-            {/* ... (Profile Picture Section is unchanged) ... */}
+            {/* Profile Picture Section */}
             <div className="text-center mb-4">
-              {/* ... (image/initial div) ... */}
+              <div className="position-relative d-inline-block">
+                {profilePic ? (
+                  <img
+                    src={profilePic}
+                    alt="Profile"
+                    className="rounded-circle border profile-avatar shadow-sm"
+                    width="120"
+                    height="120"
+                    style={{
+                      objectFit: "cover",
+                      transition: "all 0.3s ease-in-out",
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm"
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      fontSize: "2rem",
+                      transition: "background 0.3s ease",
+                    }}
+                  >
+                    {getInitial(userInfo.name, userInfo.email)}
+                  </div>
+                )}
+                <label
+                  htmlFor="upload-photo"
+                  className="btn btn-sm btn-light border position-absolute"
+                  style={{
+                    bottom: "5px",
+                    right: "5px",
+                    borderRadius: "50%",
+                    width: "35px",
+                    height: "35px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <FaCamera className="text-primary" />
+                </label>
+                <input
+                  type="file"
+                  id="upload-photo"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: "none" }}
+                />
+              </div>
+
               <h4 className="fw-bold text-primary mt-3 mb-1">
                 {userInfo.name}
               </h4>
               <p className="text-muted mb-1">{userInfo.email}</p>
-              {/* ... (remove photo button) ... */}
+
+              {profilePic && (
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="mt-2"
+                  onClick={handleRemovePhoto}
+                >
+                  Remove Photo
+                </Button>
+              )}
             </div>
 
             <hr />
 
-            {/* ... (Edit Info Section is unchanged) ... */}
+            {/* --- THIS IS THE MISSING SECTION --- */}
             <Form>
-              {/* ... (name and bio forms) ... */}
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Full Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Bio</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us something about yourself..."
+                />
+              </Form.Group>
+
               <div className="text-center">
                 <Button
                   variant="primary"
@@ -137,10 +207,11 @@ function Profile() {
                 </Button>
               </div>
             </Form>
+            {/* --- END OF MISSING SECTION --- */}
 
             <hr className="mt-4" />
 
-            {/* --- 4. UPDATE USER STATS SECTION --- */}
+            {/* User Stats Section */}
             <Row className="text-center">
               <Col>
                 <h6 className="text-muted">Problems Solved</h6>
