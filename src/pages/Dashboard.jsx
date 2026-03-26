@@ -1,7 +1,15 @@
 // src/pages/Dashboard.jsx
 import API_URL from "../apiConfig";
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, ProgressBar, Button, Spinner } from "react-bootstrap";
+import {
+  Card,
+  Row,
+  Col,
+  ProgressBar,
+  Button,
+  Spinner,
+  Container,
+} from "react-bootstrap";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 import "../App.css";
@@ -22,7 +30,7 @@ function Dashboard() {
       try {
         const { data } = await axios.get(
           `${API_URL}/api/dashboard/stats`,
-          { withCredentials: true } // Sends our auth cookie
+          { withCredentials: true }, // Sends our auth cookie
         );
         setStats(data);
         setLoading(false);
@@ -40,11 +48,36 @@ function Dashboard() {
   if (loading) {
     return (
       <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "80vh" }}
+        className="d-flex justify-content-center align-items-center bg-light"
+        style={{ minHeight: "100vh" }}
       >
         <Spinner animation="border" variant="primary" />
-        <p className="ms-3">Loading your dashboard...</p>
+        <p className="ms-3 mb-0 fw-semibold text-secondary">
+          Loading your dashboard...
+        </p>
+      </div>
+    );
+  }
+
+  // --- NEW SAFETY CHECK: Stop the crash if data failed to load ---
+  if (!stats) {
+    return (
+      <div
+        className="d-flex flex-column justify-content-center align-items-center bg-light"
+        style={{ minHeight: "100vh" }}
+      >
+        <h4 className="text-danger fw-bold mb-3">
+          Oops! Could not load your stats.
+        </h4>
+        <p className="text-secondary">
+          Please make sure your backend server is running.
+        </p>
+        <Button
+          variant="outline-primary"
+          onClick={() => window.location.reload()}
+        >
+          Try Again
+        </Button>
       </div>
     );
   }
@@ -78,81 +111,132 @@ function Dashboard() {
   };
 
   return (
-    <div className="container py-5 dashboard-page">
-      {/* --- 8. Use user's real name --- */}
-      <h2 className="fw-bold text-primary mb-4 text-center">
-        Welcome back, {userInfo ? userInfo.name : "Learner"} 👋
-      </h2>
+    <div
+      className="dashboard-page bg-light"
+      style={{ minHeight: "100vh", paddingBottom: "4rem" }}
+    >
+      <Container className="pt-5">
+        {/* --- 8. Use user's real name with updated Enterprise Typography --- */}
+        <div className="mb-5 text-center text-md-start">
+          <h2 className="fw-bolder mb-1" style={{ color: "#1e293b" }}>
+            Welcome back, {userInfo ? userInfo.name : "Learner"} 👋
+          </h2>
+          <p className="text-secondary fs-5">
+            Here is an overview of your coding journey.
+          </p>
+        </div>
 
-      <Row className="g-4 mb-4">
-        {/* (This card is still using dummy data, as before) */}
-        <Col md={4}>
-          <Card className="dashboard-card shadow-sm border-0 text-center">
-            <Card.Body>
-              <Card.Title className="fw-semibold mb-3">
-                Today’s Progress
-              </Card.Title>
-              <ProgressBar
-                now={progress}
-                label={`${progress}%`}
-                className="my-3"
-                variant="primary"
-                style={{ height: "20px" }}
-              />
-              <p className="text-muted small mb-0">
-                Keep coding — you’re doing great! 🚀
-              </p>
-            </Card.Body>
-          </Card>
-        </Col>
+        <Row className="g-4 mb-4">
+          {/* (This card is still using dummy data, as before) */}
+          <Col lg={4}>
+            <Card className="dashboard-card shadow-sm border-0 text-center h-100 p-2">
+              <Card.Body className="d-flex flex-column justify-content-center">
+                <Card.Title
+                  className="fw-bold mb-3"
+                  style={{ color: "#1e293b" }}
+                >
+                  Today’s Progress
+                </Card.Title>
+                <ProgressBar
+                  now={progress}
+                  label={`${progress}%`}
+                  className="my-3 rounded-pill"
+                  variant="primary"
+                  style={{
+                    height: "24px",
+                    fontSize: "0.85rem",
+                    fontWeight: "bold",
+                  }}
+                />
+                <p className="text-muted small mb-0 fw-semibold">
+                  Keep coding — you’re doing great! 🚀
+                </p>
+              </Card.Body>
+            </Card>
+          </Col>
 
-        {/* --- 9. This card is now DYNAMIC --- */}
-        <Col md={8}>
-          <Card className="dashboard-card shadow-sm border-0">
-            <Card.Body>
-              <Card.Title className="fw-semibold mb-3 text-center">
-                Weekly Activity
-              </Card.Title>
-              <div style={{ height: "280px" }}>
-                <Line data={chartData} options={chartOptions} />
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+          {/* --- 9. This card is now DYNAMIC --- */}
+          <Col lg={8}>
+            <Card className="dashboard-card shadow-sm border-0 h-100 p-2">
+              <Card.Body>
+                <Card.Title
+                  className="fw-bold mb-4"
+                  style={{ color: "#1e293b" }}
+                >
+                  Weekly Activity
+                </Card.Title>
+                <div style={{ height: "280px" }}>
+                  <Line data={chartData} options={chartOptions} />
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
-      <Row className="g-4">
-        {/* --- 10. This card is now DYNAMIC --- */}
-        <Col md={6}>
-          <Card className="dashboard-card shadow-sm border-0">
-            <Card.Body>
-              <Card.Title className="fw-semibold mb-2">
-                Next Suggested Topic
-              </Card.Title>
-              <p className="text-muted mb-3">
-                {stats.nextTopic} — master efficient problem-solving 💡
-              </p>
-              <Button variant="primary" href="/editor" className="w-100">
-                Start Practice
-              </Button>
-            </Card.Body>
-          </Card>
-        </Col>
+        <Row className="g-4">
+          {/* --- 10. This card is now DYNAMIC --- */}
+          <Col md={6}>
+            <Card className="dashboard-card shadow-sm border-0 h-100 p-2">
+              <Card.Body className="d-flex flex-column">
+                <Card.Title
+                  className="fw-bold mb-3"
+                  style={{ color: "#1e293b" }}
+                >
+                  Next Suggested Topic
+                </Card.Title>
+                <div className="bg-primary-subtle rounded p-3 mb-4 flex-grow-1">
+                  <p className="text-primary fw-semibold mb-0">
+                    <span className="text-dark">Topic:</span> {stats.nextTopic}{" "}
+                    💡
+                  </p>
+                  <small className="text-secondary">
+                    Master efficient problem-solving.
+                  </small>
+                </div>
+                <Button
+                  variant="primary"
+                  href="/editor"
+                  className="w-100 py-2 fw-semibold"
+                >
+                  Start Practice
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
 
-        {/* (This card is still using dummy data, as before) */}
-        <Col md={6}>
-          <Card className="dashboard-card shadow-sm border-0">
-            <Card.Body>
-              <Card.Title className="fw-semibold mb-3">Leaderboard</Card.Title>
-              <ul className="list-unstyled leaderboard-list">
-                <li>🥇 Alice — 320 pts</li>
-                <li>🥈 Tushar — 280 pts</li>
-                <li>🥉 Raj — 250 pts</li>
-              </ul>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+          {/* (This card is still using dummy data, as before) */}
+          <Col md={6}>
+            <Card className="dashboard-card shadow-sm border-0 h-100 p-2">
+              <Card.Body>
+                <Card.Title
+                  className="fw-bold mb-4"
+                  style={{ color: "#1e293b" }}
+                >
+                  Leaderboard
+                </Card.Title>
+                <ul className="list-unstyled leaderboard-list mb-0">
+                  <li className="d-flex justify-content-between align-items-center px-3 py-2">
+                    <span className="fw-semibold">🥇 Alice</span>
+                    <span className="badge bg-primary rounded-pill">
+                      320 pts
+                    </span>
+                  </li>
+                  <li className="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+                    <span className="fw-semibold">🥈 Tushar</span>
+                    <span className="badge bg-secondary rounded-pill">
+                      280 pts
+                    </span>
+                  </li>
+                  <li className="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+                    <span className="fw-semibold">🥉 Raj</span>
+                    <span className="badge bg-dark rounded-pill">250 pts</span>
+                  </li>
+                </ul>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 }

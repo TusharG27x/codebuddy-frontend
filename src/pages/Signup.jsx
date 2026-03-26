@@ -6,27 +6,24 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-// --- 1. Imports for our API logic ---
+// --- Imports for our API logic ---
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 function Signup() {
-  // --- 2. Add 'name' and 'loading' states ---
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false); // For button
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const auth = useAuth(); // Get auth context
+  const auth = useAuth();
 
-  // --- 3. This is the updated signup handler ---
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // --- 4. Keep your existing validation ---
     if (!name || !email || !password || !confirmPassword) {
       toast.error("Please fill all fields!");
       setLoading(false);
@@ -39,20 +36,17 @@ function Signup() {
       return;
     }
 
-    // --- 5. Call our backend API ---
     try {
       const response = await axios.post(
         `${API_URL}/api/users/register`,
-        { name, email, password }, // Send name, email, and password
-        { withCredentials: true } // This will log them in right away
+        { name, email, password },
+        { withCredentials: true },
       );
 
-      // --- 6. On success, log them in and go to dashboard ---
       auth.login(response.data);
       toast.success(`Welcome to CodeBuddy, ${response.data.name}! 🚀`);
-      navigate("/dashboard"); // Redirect to dashboard
+      navigate("/dashboard");
     } catch (err) {
-      // --- 7. On failure, show an error from the backend ---
       const message = err.response?.data?.message || "Registration failed!";
       toast.error(message);
       setLoading(false);
@@ -60,91 +54,97 @@ function Signup() {
   };
 
   return (
-    <Container
-      className="py-5 d-flex justify-content-center align-items-center"
-      style={{ minHeight: "80vh" }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+    <div className="bg-light" style={{ minHeight: "100vh" }}>
+      <Container
+        className="py-5 d-flex justify-content-center align-items-center"
+        style={{ minHeight: "90vh" }}
       >
-        <Card className="p-4 shadow-sm border-0" style={{ width: "380px" }}>
-          <Card.Body>
-            <h3 className="text-center mb-4 text-primary fw-bold">
-              Create Your CodeBuddy Account
-            </h3>
-            <Form onSubmit={handleSignup}>
-              {/* --- 8. Add the new "Name" field --- */}
-              <Form.Group className="mb-3">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Enter password (min 6 chars)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-4">
-                <Form.Label>Confirm Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Re-enter password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </Form.Group>
-
-              {/* --- 9. Update Button for loading state --- */}
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-100 mb-3"
-                disabled={loading}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Card
+            className="p-4 shadow-sm border-0 rounded-4"
+            style={{ width: "380px" }}
+          >
+            <Card.Body>
+              <h3
+                className="text-center mb-4 fw-bolder"
+                style={{ color: "#1e293b" }}
               >
-                {loading ? "Creating account..." : "Sign Up"}
-              </Button>
+                Create Account
+              </h3>
+              <Form onSubmit={handleSignup}>
+                <Form.Group className="mb-3 text-start">
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="py-2 bg-light border-0"
+                  />
+                </Form.Group>
 
-              <p className="text-center text-muted mb-0">
-                Already have an account?{" "}
-                <span
-                  className="text-primary fw-semibold"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/login")}
+                <Form.Group className="mb-3 text-start">
+                  <Form.Control
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="py-2 bg-light border-0"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3 text-start">
+                  <Form.Control
+                    type="password"
+                    placeholder="Enter password (min 6 chars)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="py-2 bg-light border-0"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-4 text-start">
+                  <Form.Control
+                    type="password"
+                    placeholder="Re-enter password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="py-2 bg-light border-0"
+                  />
+                </Form.Group>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 mb-4 py-2 fw-bold shadow-sm"
+                  disabled={loading}
                 >
-                  Login
-                </span>
-              </p>
-            </Form>
-          </Card.Body>
-        </Card>
-      </motion.div>
-    </Container>
+                  {loading ? "Creating account..." : "Sign Up"}
+                </Button>
+
+                <p className="text-center text-secondary mb-0">
+                  Already have an account?{" "}
+                  <span
+                    className="text-primary fw-bold"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/login")}
+                  >
+                    Login
+                  </span>
+                </p>
+              </Form>
+            </Card.Body>
+          </Card>
+        </motion.div>
+      </Container>
+    </div>
   );
 }
 

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-// --- 1. Imports for our API logic ---
+// --- Imports for our API logic ---
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
@@ -18,37 +18,31 @@ function Login() {
   const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
 
-  // --- 2. Add loading state and get auth context ---
   const [loading, setLoading] = useState(false);
-  const auth = useAuth(); // Get login function from our context
+  const auth = useAuth();
 
-  // --- 3. This is the updated login handler ---
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
+    setLoading(true);
 
     try {
-      // 4. Call our backend API
       const response = await axios.post(
         `${API_URL}/api/users/login`,
         { email, password },
-        { withCredentials: true } // CRITICAL: This sends the auth cookie
+        { withCredentials: true },
       );
 
-      // 5. On success, update global state
-      auth.login(response.data); // This updates context and localStorage
+      auth.login(response.data);
       toast.success(`Welcome back, ${response.data.name}! 🚀`);
       navigate("/dashboard");
     } catch (err) {
-      // 6. On failure, show an error toast
       const message =
         err.response?.data?.message || "Invalid email or password!";
       toast.error(message);
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
-  // --- 7. "Forgot Password" logic remains unchanged for now ---
   const handlePasswordReset = () => {
     let users = JSON.parse(localStorage.getItem("users")) || [];
     const userIndex = users.findIndex((u) => u.email === resetEmail);
@@ -67,48 +61,53 @@ function Login() {
   };
 
   return (
-    <>
+    <div className="bg-light" style={{ minHeight: "100vh" }}>
       <Container
         className="py-5 d-flex justify-content-center align-items-center"
-        style={{ minHeight: "80vh" }}
+        style={{ minHeight: "90vh" }}
       >
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Card className="p-4 shadow-sm border-0" style={{ width: "380px" }}>
+          <Card
+            className="p-4 shadow-sm border-0 rounded-4"
+            style={{ width: "380px" }}
+          >
             <Card.Body>
-              <h3 className="text-center mb-4 text-primary fw-bold">
+              <h3
+                className="text-center mb-4 fw-bolder"
+                style={{ color: "#1e293b" }}
+              >
                 Login to CodeBuddy
               </h3>
               <Form onSubmit={handleLogin}>
-                <Form.Group className="mb-3">
-                  {/* ... (email input - no change) ... */}
+                <Form.Group className="mb-3 text-start">
                   <Form.Control
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="py-2 bg-light border-0"
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-2">
-                  {/* ... (password input - no change) ... */}
+                <Form.Group className="mb-2 text-start">
                   <Form.Control
                     type="password"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="py-2 bg-light border-0"
                   />
                 </Form.Group>
 
-                <div className="text-end mb-3">
-                  {/* ... (forgot password link - no change) ... */}
+                <div className="text-end mb-4">
                   <span
-                    className="text-primary small"
+                    className="text-primary small fw-semibold"
                     style={{ cursor: "pointer" }}
                     onClick={() => setShowReset(true)}
                   >
@@ -116,21 +115,19 @@ function Login() {
                   </span>
                 </div>
 
-                {/* --- 8. Update Button for loading state --- */}
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-100 mb-3"
-                  disabled={loading} // Disable button while loading
+                  className="w-100 mb-4 py-2 fw-bold shadow-sm"
+                  disabled={loading}
                 >
                   {loading ? "Logging in..." : "Login"}
                 </Button>
 
-                <p className="text-center text-muted mb-0">
-                  {/* ... (signup link - no change) ... */}
+                <p className="text-center text-secondary mb-0">
                   Don’t have an account?{" "}
                   <span
-                    className="text-primary fw-semibold"
+                    className="text-primary fw-bold"
                     style={{ cursor: "pointer" }}
                     onClick={() => navigate("/signup")}
                   >
@@ -143,35 +140,42 @@ function Login() {
         </motion.div>
       </Container>
 
-      {/* --- Forgot Password Modal (no change) --- */}
+      {/* Forgot Password Modal */}
       <Modal show={showReset} onHide={() => setShowReset(false)} centered>
-        {/* ... (rest of your modal code) ... */}
-        <Modal.Header closeButton>
-          <Modal.Title>Reset Password</Modal.Title>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold" style={{ color: "#1e293b" }}>
+            Reset Password
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Registered Email</Form.Label>
+              <Form.Label className="fw-semibold text-secondary">
+                Registered Email
+              </Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Enter your email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
+                className="bg-light border-0"
               />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>New Password</Form.Label>
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-semibold text-secondary">
+                New Password
+              </Form.Label>
               <Form.Control
                 type="password"
                 placeholder="Enter new password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                className="bg-light border-0"
               />
             </Form.Group>
             <Button
-              variant="success"
-              className="w-100"
+              variant="primary"
+              className="w-100 py-2 fw-bold"
               onClick={handlePasswordReset}
             >
               Update Password
@@ -179,7 +183,7 @@ function Login() {
           </Form>
         </Modal.Body>
       </Modal>
-    </>
+    </div>
   );
 }
 

@@ -54,7 +54,9 @@ html {
 }
 
 .feature-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .feature-card:hover {
@@ -93,7 +95,9 @@ select:focus {
 }
 
 button {
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
 button:hover {
@@ -121,7 +125,9 @@ button:hover {
 }
 
 .feature-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .feature-card:hover {
@@ -162,7 +168,9 @@ footer {
 
 .profile-card {
   background: #ffffff;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .profile-card:hover {
@@ -238,7 +246,9 @@ footer {
 
 .dashboard-card {
   border-radius: 12px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .dashboard-card:hover {
@@ -286,7 +296,9 @@ footer {
 }
 
 .card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .card:hover {
@@ -311,4 +323,80 @@ footer {
 
 .btn-primary:hover {
   background-color: #0b5ed7;
+}
+
+/* --- CODEBUDDY ENTERPRISE UI --- */
+
+/* 1. Clean Global Background */
+body {
+  background-color: #f8f9fa !important;
+}
+
+/* 2. Feature Card Hover Effects */
+.feature-card-pro {
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
+
+.feature-card-pro:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 3. Rounded Icon Wrappers */
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+/* 4. Custom Colors for Bootstrap Subtle Classes */
+/* (Added just in case you are using an older Bootstrap version) */
+.bg-primary-subtle {
+  background-color: #cfe2ff;
+}
+.bg-success-subtle {
+  background-color: #d1e7dd;
+}
+.bg-info-subtle {
+  background-color: #cff4fc;
+}
+.bg-warning-subtle {
+  background-color: #fff3cd;
+}
+
+/* 5. Clean Footer */
+footer {
+  background-color: #f8f9fa !important;
+}
+
+/* 6. Tech Stack Hover Effects */
+.tech-hover-item {
+  color: #6c757d; /* Muted gray by default */
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
+  cursor: default;
+}
+
+.tech-hover-item:hover {
+  transform: translateY(-5px) scale(1.1);
+}
+
+/* Brand Colors on Hover */
+.tech-hover-item.react:hover {
+  color: #61dafb !important; /* React Blue */
+}
+.tech-hover-item.node:hover {
+  color: #339933 !important; /* Node.js Green */
+}
+.tech-hover-item.mongo:hover {
+  color: #47a248 !important; /* MongoDB Green */
+}
+.tech-hover-item.gemini:hover {
+  color: #8e24aa !important; /* Gemini Purple/Blue */
 }

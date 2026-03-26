@@ -1,6 +1,14 @@
 // src/pages/Profile.jsx
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Button, Form, Spinner } from "react-bootstrap";
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Form,
+  Spinner,
+  Container,
+} from "react-bootstrap";
 import { FaCamera } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
@@ -47,7 +55,7 @@ function Profile() {
       const { data } = await axios.put(
         `${API_URL}/api/users/profile`,
         { name, bio },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       login(data); // This updates the global state (and userInfo in the navbar)
       toast.success("Profile updated successfully!");
@@ -82,155 +90,203 @@ function Profile() {
   if (loadingProfile || !stats) {
     return (
       <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "80vh" }}
+        className="d-flex flex-column justify-content-center align-items-center bg-light"
+        style={{ minHeight: "100vh" }}
       >
         <Spinner animation="border" variant="primary" />
-        <p className="ms-3">Loading your profile...</p>
+        <p className="ms-3 mt-3 fw-semibold text-secondary">
+          Loading your profile...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="container mt-5 mb-5">
-      <Row className="justify-content-center">
-        <Col md={8}>
-          <Card
-            className="p-4 border-0 shadow-lg rounded-4 profile-card"
-            style={{
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-            }}
-          >
-            {/* Profile Picture Section */}
-            <div className="text-center mb-4">
-              <div className="position-relative d-inline-block">
-                {profilePic ? (
-                  <img
-                    src={profilePic}
-                    alt="Profile"
-                    className="rounded-circle border profile-avatar shadow-sm"
-                    width="120"
-                    height="120"
+    <div className="bg-light py-5" style={{ minHeight: "100vh" }}>
+      <Container>
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <Card className="p-4 border-0 shadow-sm rounded-4 profile-card bg-white">
+              {/* Profile Picture Section */}
+              <div className="text-center mb-4">
+                <div className="position-relative d-inline-block">
+                  {profilePic ? (
+                    <img
+                      src={profilePic}
+                      alt="Profile"
+                      className="rounded-circle border profile-avatar shadow-sm"
+                      width="120"
+                      height="120"
+                      style={{
+                        objectFit: "cover",
+                        transition: "all 0.3s ease-in-out",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm mx-auto"
+                      style={{
+                        width: "120px",
+                        height: "120px",
+                        fontSize: "2.5rem",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {getInitial(userInfo.name, userInfo.email)}
+                    </div>
+                  )}
+                  <label
+                    htmlFor="upload-photo"
+                    className="btn btn-sm btn-light border position-absolute"
                     style={{
-                      objectFit: "cover",
-                      transition: "all 0.3s ease-in-out",
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm"
-                    style={{
-                      width: "120px",
-                      height: "120px",
-                      fontSize: "2rem",
-                      transition: "background 0.3s ease",
+                      bottom: "5px",
+                      right: "5px",
+                      borderRadius: "50%",
+                      width: "35px",
+                      height: "35px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                     }}
                   >
-                    {getInitial(userInfo.name, userInfo.email)}
-                  </div>
+                    <FaCamera className="text-primary" />
+                  </label>
+                  <input
+                    type="file"
+                    id="upload-photo"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={{ display: "none" }}
+                  />
+                </div>
+
+                <h3
+                  className="fw-bolder mt-3 mb-1"
+                  style={{ color: "#1e293b" }}
+                >
+                  {userInfo.name}
+                </h3>
+                <p className="text-secondary fw-medium mb-1">
+                  {userInfo.email}
+                </p>
+
+                {profilePic && (
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    className="mt-2 fw-semibold rounded-pill px-3"
+                    onClick={handleRemovePhoto}
+                  >
+                    Remove Photo
+                  </Button>
                 )}
-                <label
-                  htmlFor="upload-photo"
-                  className="btn btn-sm btn-light border position-absolute"
-                  style={{
-                    bottom: "5px",
-                    right: "5px",
-                    borderRadius: "50%",
-                    width: "35px",
-                    height: "35px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <FaCamera className="text-primary" />
-                </label>
-                <input
-                  type="file"
-                  id="upload-photo"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={{ display: "none" }}
-                />
               </div>
 
-              <h4 className="fw-bold text-primary mt-3 mb-1">
-                {userInfo.name}
-              </h4>
-              <p className="text-muted mb-1">{userInfo.email}</p>
+              <hr className="text-muted opacity-25" />
 
-              {profilePic && (
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleRemovePhoto}
-                >
-                  Remove Photo
-                </Button>
-              )}
-            </div>
+              {/* Edit Profile Form */}
+              <Form className="px-md-3">
+                <Form.Group className="mb-4 text-start">
+                  <Form.Label className="fw-bold text-secondary mb-2">
+                    Full Name
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="bg-light border-0 shadow-none py-2"
+                  />
+                </Form.Group>
 
-            <hr />
+                <Form.Group className="mb-4 text-start">
+                  <Form.Label className="fw-bold text-secondary mb-2">
+                    Bio
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell us something about yourself..."
+                    className="bg-light border-0 shadow-none py-2"
+                    style={{ resize: "none" }}
+                  />
+                </Form.Group>
 
-            {/* --- THIS IS THE MISSING SECTION --- */}
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold">Full Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Form.Group>
+                <div className="text-center mt-2 mb-4">
+                  <Button
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="px-5 py-2 fw-bold shadow-sm rounded-pill"
+                  >
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </Form>
 
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold">Bio</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell us something about yourself..."
-                />
-              </Form.Group>
+              <hr className="text-muted opacity-25 mt-2 mb-4" />
 
-              <div className="text-center">
-                <Button
-                  variant="primary"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </Form>
-            {/* --- END OF MISSING SECTION --- */}
-
-            <hr className="mt-4" />
-
-            {/* User Stats Section */}
-            <Row className="text-center">
-              <Col>
-                <h6 className="text-muted">Problems Solved</h6>
-                <h5 className="fw-bold text-success">{stats.problemsSolved}</h5>
-              </Col>
-              <Col>
-                <h6 className="text-muted">Current Streak</h6>
-                <h5 className="fw-bold text-warning">
-                  {stats.currentStreak} days 🔥
-                </h5>
-              </Col>
-              <Col>
-                <h6 className="text-muted">Rank</h6>
-                <h5 className="fw-bold text-info">#{stats.rank}</h5>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-      </Row>
+              {/* User Stats Section - Enterprise Style */}
+              <Row className="text-center g-3 px-md-2">
+                <Col xs={4}>
+                  <div className="bg-success-subtle rounded-3 p-3 h-100 d-flex flex-column justify-content-center">
+                    <h6
+                      className="text-success fw-bold mb-1"
+                      style={{
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Solved
+                    </h6>
+                    <h4 className="fw-bolder text-success mb-0">
+                      {stats.problemsSolved}
+                    </h4>
+                  </div>
+                </Col>
+                <Col xs={4}>
+                  <div className="bg-warning-subtle rounded-3 p-3 h-100 d-flex flex-column justify-content-center">
+                    <h6
+                      className="text-warning-emphasis fw-bold mb-1"
+                      style={{
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Streak
+                    </h6>
+                    <h4 className="fw-bolder text-warning-emphasis mb-0">
+                      {stats.currentStreak} <span className="fs-5">🔥</span>
+                    </h4>
+                  </div>
+                </Col>
+                <Col xs={4}>
+                  <div className="bg-info-subtle rounded-3 p-3 h-100 d-flex flex-column justify-content-center">
+                    <h6
+                      className="text-info-emphasis fw-bold mb-1"
+                      style={{
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Rank
+                    </h6>
+                    <h4 className="fw-bolder text-info-emphasis mb-0">
+                      #{stats.rank}
+                    </h4>
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 }

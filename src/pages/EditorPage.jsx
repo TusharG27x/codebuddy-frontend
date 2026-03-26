@@ -12,28 +12,22 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { motion, AnimatePresence } from "framer-motion";
-// --- 1. Use react-hot-toast (to match other pages) ---
 import toast from "react-hot-toast";
-// --- 2. Imports for API Call ---
 import axios from "axios";
-// We import useAuth to make sure we're logged in, even though we don't use the object
-// This page is already protected by ProtectedRoute, so we're good.
 
 function EditorPage() {
   const [problem, setProblem] = useState("");
   const [code, setCode] = useState("// Write your code here...");
-  const [helpType, setHelpType] = useState("hint"); // Default to 'hint'
+  const [helpType, setHelpType] = useState("hint");
   const [aiResponse, setAiResponse] = useState("");
   const [output, setOutput] = useState("");
-  const [loading, setLoading] = useState(false); // For Run button
+  const [loading, setLoading] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [testInput, setTestInput] = useState("");
   const [lastSaved, setLastSaved] = useState(null);
-
-  // --- 3. New state for AI loading ---
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Load saved data (unchanged)
+  // Load saved data
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("codebuddy-progress"));
     if (saved) {
@@ -43,7 +37,7 @@ function EditorPage() {
     }
   }, []);
 
-  // Auto-save (unchanged)
+  // Auto-save
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (problem.trim() || code.trim()) {
@@ -59,7 +53,7 @@ function EditorPage() {
     return () => clearTimeout(timeout);
   }, [problem, code]);
 
-  // --- 4. This is the updated AI Help handler ---
+  // Handle AI Help
   const handleHelp = async () => {
     if (!code.trim() || code === "// Write your code here...") {
       toast.warn("Please write some code for the AI to analyze ⚠️");
@@ -67,16 +61,15 @@ function EditorPage() {
     }
 
     setAiLoading(true);
-    setAiResponse(""); // Clear previous response
+    setAiResponse("");
 
     try {
       const { data } = await axios.post(
         `${API_URL}/api/ai/get-hint`,
         { code, problem },
-        { withCredentials: true } // Essential for our protected route
+        { withCredentials: true },
       );
 
-      // On success, set the AI response
       setAiResponse(data.hint);
       setAiLoading(false);
     } catch (error) {
@@ -87,7 +80,7 @@ function EditorPage() {
     }
   };
 
-  // Handle Run (unchanged - this is still a mock)
+  // Handle Run (mock)
   const handleRun = () => {
     if (!code.trim() || code === "// Write your code here...") {
       toast.warn("Please write some code before running ⚙️");
@@ -105,9 +98,8 @@ function EditorPage() {
     }, 1800);
   };
 
-  // --- 5. Updated Reset (Removed 'window.confirm') ---
+  // Handle Reset
   const handleReset = () => {
-    // We remove the confirm popup, as it's blocking
     localStorage.removeItem("codebuddy-progress");
     setProblem("");
     setCode("// Write your code here...");
@@ -119,182 +111,212 @@ function EditorPage() {
   };
 
   return (
-    <Container className="py-4">
-      <motion.h2
-        className="text-center fw-bold text-primary mb-4"
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        CodeBuddy Editor 💻
-      </motion.h2>
+    <div
+      className="bg-light"
+      style={{ minHeight: "100vh", paddingBottom: "3rem" }}
+    >
+      <Container className="py-5">
+        <motion.div
+          className="text-center mb-5"
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h2 className="fw-bolder mb-2" style={{ color: "#1e293b" }}>
+            CodeBuddy Editor 💻
+          </h2>
+          <p className="text-secondary fs-5">
+            Solve problems and get intelligent hints.
+          </p>
+        </motion.div>
 
-      <Row>
-        {/* Problem + AI Section */}
-        <Col md={4}>
-          <Card className="shadow-sm border-0 mb-4">
-            <Card.Body>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold">
-                  🧩 Problem Statement
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  placeholder="Paste your problem here..."
-                  value={problem}
-                  onChange={(e) => setProblem(e.target.value)}
-                  style={{ backgroundColor: "#fff", color: "#000" }}
-                />
-              </Form.Group>
+        <Row className="g-4">
+          {/* Left Panel: Problem + AI Section */}
+          <Col lg={4}>
+            <Card className="shadow-sm border-0 h-100">
+              <Card.Body className="d-flex flex-column">
+                <Form.Group className="mb-4">
+                  <Form.Label
+                    className="fw-bold mb-2"
+                    style={{ color: "#1e293b" }}
+                  >
+                    🧩 Problem Statement
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={5}
+                    placeholder="Paste your problem here..."
+                    value={problem}
+                    onChange={(e) => setProblem(e.target.value)}
+                    className="bg-light border-0 shadow-none"
+                    style={{ resize: "none" }}
+                  />
+                </Form.Group>
 
-              {/* --- 6. Simplified the AI Help section --- */}
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold">
-                  Stuck? Get an AI Hint
-                </Form.Label>
-                <Form.Text className="d-block mb-2 text-muted">
-                  Our AI will analyze your code (right) and give you a small
-                  hint, not the whole answer.
-                </Form.Text>
-              </Form.Group>
+                <hr className="text-muted opacity-25" />
 
-              {/* --- 7. Updated AI Help Button --- */}
-              <Button
-                variant="primary"
-                className="w-100 mb-3"
-                onClick={handleHelp}
-                disabled={aiLoading}
-              >
-                {aiLoading ? (
-                  <>
-                    <Spinner as="span" animation="border" size="sm" />{" "}
-                    Generating...
-                  </>
-                ) : (
-                  "🤖 Get AI Hint"
-                )}
-              </Button>
+                <div className="mt-2 mb-4">
+                  <Form.Label
+                    className="fw-bold mb-1"
+                    style={{ color: "#1e293b" }}
+                  >
+                    Stuck? Get an AI Hint
+                  </Form.Label>
+                  <Form.Text className="d-block mb-3 text-secondary">
+                    Our AI will analyze your code and provide a logical stepping
+                    stone, not the whole answer.
+                  </Form.Text>
+                  <Button
+                    variant="primary"
+                    className="w-100 py-2 fw-semibold shadow-sm"
+                    onClick={handleHelp}
+                    disabled={aiLoading}
+                  >
+                    {aiLoading ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          className="me-2"
+                        />
+                        Analyzing Code...
+                      </>
+                    ) : (
+                      "🤖 Get AI Hint"
+                    )}
+                  </Button>
+                </div>
 
-              <Card className="border-0 shadow-sm">
-                <Card.Body>
-                  <h6 className="fw-bold text-success">AI Response:</h6>
-                  {/* --- 8. Updated AI Response Box --- */}
-                  {aiLoading ? (
-                    <div className="text-center py-3">
-                      <Spinner animation="border" variant="dark" size="sm" />
-                      <p className="mt-2 mb-0 small">
-                        CodeBuddy is thinking...
-                      </p>
+                {/* Styled AI Response Box */}
+                {(aiResponse || aiLoading) && (
+                  <div className="mt-auto">
+                    <h6 className="fw-bold text-success mb-2">AI Response:</h6>
+                    <div className="bg-primary-subtle border-start border-primary border-4 rounded p-3">
+                      {aiLoading ? (
+                        <div className="d-flex align-items-center text-primary">
+                          <Spinner
+                            animation="grow"
+                            size="sm"
+                            className="me-2"
+                          />
+                          <small className="fw-semibold">Thinking...</small>
+                        </div>
+                      ) : (
+                        <p
+                          className="mb-0 text-dark"
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            fontSize: "0.95rem",
+                          }}
+                        >
+                          {aiResponse}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
-                      {aiResponse || "AI suggestions will appear here..."}
-                    </p>
-                  )}
-                </Card.Body>
-              </Card>
-            </Card.Body>
-          </Card>
-        </Col>
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
 
-        {/* Code Editor + Output (This side is unchanged) */}
-        <Col md={8}>
-          <Card className="shadow-sm border-0 mb-4">
-            <Card.Body>
-              <h5 className="fw-semibold mb-2">💻 Code Editor</h5>
-              <div
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                }}
-              >
-                <Editor
-                  height="400px"
-                  language="python"
-                  value={code}
-                  onChange={(val) => setCode(val)}
-                  theme="vs-light"
-                  options={{
-                    fontSize: 14,
-                    minimap: { enabled: false },
-                    automaticLayout: true,
+          {/* Right Panel: Code Editor + Output */}
+          <Col lg={8}>
+            <Card className="shadow-sm border-0 h-100">
+              <Card.Body className="d-flex flex-column">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h5 className="fw-bold mb-0" style={{ color: "#1e293b" }}>
+                    💻 Code Editor
+                  </h5>
+                  <small className="text-muted fw-semibold">
+                    {lastSaved
+                      ? `💾 Auto-saved at ${lastSaved}`
+                      : "No save yet"}
+                  </small>
+                </div>
+
+                <div
+                  className="flex-grow-1"
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    minHeight: "400px",
                   }}
-                />
-              </div>
+                >
+                  <Editor
+                    height="100%"
+                    language="python"
+                    value={code}
+                    onChange={(val) => setCode(val)}
+                    theme="vs-light"
+                    options={{
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      automaticLayout: true,
+                      padding: { top: 16 },
+                    }}
+                  />
+                </div>
 
-              {/* <Form.Group className="mt-3">
-                <Form.Label className="fw-semibold">🧪 Custom Input</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={2}
-                  placeholder="Enter test input here..."
-                  value={testInput}
-                  onChange={(e) => setTestInput(e.target.value)}
-                />
-              </Form.Group> */}
-
-              <div className="d-flex justify-content-between align-items-center mt-3">
-                <small className="text-muted">
-                  {lastSaved ? `💾 Auto-saved at ${lastSaved}` : "No save yet"}
-                </small>
-                <div>
+                <div className="d-flex justify-content-end mt-3">
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    className="me-2"
+                    className="fw-semibold px-3"
                     onClick={handleReset}
                   >
-                    🧹 Reset
+                    🧹 Reset Editor
                   </Button>
-                  {/* <Button
-                    variant="secondary"
-                    size="sm"
-                    className="me-2"
-                    onClick={handleRun}
-                  >
-                    ▶ Run
-                  </Button> */}
                 </div>
-              </div>
 
-              <AnimatePresence>
-                {showOutput && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <Card className="mt-4 border-0 shadow-sm">
-                      <Card.Header className="bg-light fw-semibold text-dark">
-                        💻 Output
-                      </Card.Header>
-                      <Card.Body
-                        style={{
-                          backgroundColor: "#fff",
-                          fontFamily: "monospace",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {loading ? (
-                          <div className="text-center py-3">
-                            <Spinner animation="border" variant="dark" />
-                            <p className="mt-2">Running your code...</p>
-                          </div>
-                        ) : (
-                          output || "⚙️ No output yet"
-                        )}
-                      </Card.Body>
-                    </Card>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+                <AnimatePresence>
+                  {showOutput && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <Card className="mt-4 border-0 bg-light">
+                        <Card.Header
+                          className="bg-light border-bottom-0 pt-3 pb-0 fw-bold"
+                          style={{ color: "#1e293b" }}
+                        >
+                          💻 Output
+                        </Card.Header>
+                        <Card.Body
+                          style={{
+                            fontFamily: "monospace",
+                            whiteSpace: "pre-wrap",
+                          }}
+                        >
+                          {loading ? (
+                            <div className="text-center py-2">
+                              <Spinner
+                                animation="border"
+                                variant="secondary"
+                                size="sm"
+                              />
+                              <span className="ms-2 text-secondary">
+                                Running code...
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-dark">
+                              {output || "⚙️ No output yet"}
+                            </span>
+                          )}
+                        </Card.Body>
+                      </Card>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 }
 

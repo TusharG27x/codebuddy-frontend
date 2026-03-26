@@ -3,22 +3,21 @@ import API_URL from "../apiConfig";
 import React from "react";
 import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // 1. Import useAuth
-import axios from "axios"; // 2. Import axios
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 function AppNavbar() {
   const navigate = useNavigate();
-  const { userInfo, logout } = useAuth(); // 3. Use auth context
+  const { userInfo, logout } = useAuth();
 
-  // 4. Update the logout handler
   const handleLogout = async () => {
     try {
       // Call the backend endpoint to clear the cookie
       await axios.post(
         `${API_URL}/api/users/logout`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       // Clear the global state and localStorage
@@ -35,7 +34,7 @@ function AppNavbar() {
     <Navbar expand="lg" bg="white" variant="light" className="shadow-sm">
       <Container>
         <Navbar.Brand
-          onClick={() => navigate(userInfo ? "/dashboard" : "/")} // Go to dashboard if logged in
+          onClick={() => navigate("/")} // Always go to Home page now!
           className="fw-bold text-primary"
           style={{ cursor: "pointer" }}
         >
@@ -43,7 +42,6 @@ function AppNavbar() {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          {/* 5. Update conditional rendering logic */}
           <Nav className="ms-auto align-items-center">
             {userInfo ? (
               // --- Show these links if user is LOGGED IN ---
