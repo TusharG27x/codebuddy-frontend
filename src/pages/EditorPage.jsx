@@ -26,6 +26,11 @@ function EditorPage() {
   const [testInput, setTestInput] = useState("");
   const [lastSaved, setLastSaved] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [language, setLanguage] = useState("python");
+
+  // --- NEW STATES FOR COMPLEXITY ANALYZER ---
+  const [complexityParams, setComplexityParams] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   // Load saved data
   useEffect(() => {
@@ -80,22 +85,76 @@ function EditorPage() {
     }
   };
 
-  // Handle Run (mock)
-  const handleRun = () => {
+  // --- NEW: Handle Complexity Analysis ---
+  const handleAnalyze = async () => {
+    if (!code.trim() || code === "// Write your code here...") {
+      toast.warn("Please write some code to analyze ⚙️");
+      return;
+    }
+
+    setAnalyzing(true);
+    setComplexityParams(null); // Clear previous results
+
+    try {
+      const { data } = await axios.post(
+        `${API_URL}/api/ai/analyze-complexity`,
+        { code, language },
+        { withCredentials: true },
+      );
+
+      // Parse the strict format returned by our backend prompt
+      const text = data.analysis;
+      const timeMatch = text.match(/Time:\s*(.+)/);
+      const spaceMatch = text.match(/Space:\s*(.+)/);
+      const expMatch = text.match(/Explanation:\s*(.+)/s);
+
+      setComplexityParams({
+        time: timeMatch ? timeMatch[1] : "Unknown",
+        space: spaceMatch ? spaceMatch[1] : "Unknown",
+        explanation: expMatch ? expMatch[1] : text, // Fallback to raw text if parsing fails
+      });
+
+      setAnalyzing(false);
+      toast.success("Analysis complete!");
+    } catch (error) {
+      console.error("Analysis Error:", error);
+      toast.error("Failed to analyze complexity.");
+      setAnalyzing(false);
+    }
+  };
+
+  // Real Code Execution
+  const handleRun = async () => {
     if (!code.trim() || code === "// Write your code here...") {
       toast.warn("Please write some code before running ⚙️");
       return;
     }
+
     setLoading(true);
     setShowOutput(true);
-    setTimeout(() => {
-      const result = testInput
-        ? `✅ Output for input "${testInput}": ${testInput.length * 2}`
-        : "✅ Code executed successfully!\nOutput: 42";
-      setOutput(result);
+    setOutput(""); // Clear old output
+
+    try {
+      const { data } = await axios.post(
+        `${API_URL}/api/code/execute`,
+        {
+          code: code,
+          language: language,
+        },
+        { withCredentials: true },
+      );
+
+      setOutput(
+        data.output || "✅ Code executed successfully (No output returned).",
+      );
       setLoading(false);
       toast.success("Execution complete!");
-    }, 1800);
+    } catch (error) {
+      console.error("Execution error:", error);
+      setOutput(error.response?.data?.message || "❌ Error executing code.");
+      setLoading(false);
+      toast.error("Execution failed.");
+    }
   };
 
   // Handle Reset
@@ -107,6 +166,7 @@ function EditorPage() {
     setOutput("");
     setShowOutput(false);
     setLastSaved(null);
+    setComplexityParams(null); // Also clear complexity params on reset
     toast.success("Progress reset 🧹");
   };
 
@@ -159,33 +219,81 @@ function EditorPage() {
                     className="fw-bold mb-1"
                     style={{ color: "#1e293b" }}
                   >
-                    Stuck? Get an AI Hint
+                    🤖 AI Assistant
                   </Form.Label>
                   <Form.Text className="d-block mb-3 text-secondary">
-                    Our AI will analyze your code and provide a logical stepping
-                    stone, not the whole answer.
+                    Get an intelligent hint or analyze your algorithm's
+                    efficiency.
                   </Form.Text>
-                  <Button
-                    variant="primary"
-                    className="w-100 py-2 fw-semibold shadow-sm"
-                    onClick={handleHelp}
-                    disabled={aiLoading}
-                  >
-                    {aiLoading ? (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          className="me-2"
-                        />
-                        Analyzing Code...
-                      </>
-                    ) : (
-                      "🤖 Get AI Hint"
-                    )}
-                  </Button>
+
+                  {/* --- UPDATED: Side-by-side Buttons --- */}
+                  <div className="d-flex gap-2">
+                    <Button
+                      variant="primary"
+                      className="w-50 py-2 fw-semibold shadow-sm d-flex justify-content-center align-items-center"
+                      onClick={handleHelp}
+                      disabled={aiLoading || analyzing}
+                    >
+                      {aiLoading ? (
+                        <Spinner size="sm" animation="border" />
+                      ) : (
+                        "💡 Get Hint"
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="dark"
+                      className="w-50 py-2 fw-semibold shadow-sm d-flex justify-content-center align-items-center"
+                      onClick={handleAnalyze}
+                      disabled={analyzing || aiLoading}
+                    >
+                      {analyzing ? (
+                        <Spinner size="sm" animation="border" />
+                      ) : (
+                        "⚡ Big O Analysis"
+                      )}
+                    </Button>
+                  </div>
                 </div>
+
+                {/* --- NEW: Complexity Results Badge --- */}
+                {complexityParams && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 p-3 bg-white border rounded shadow-sm"
+                  >
+                    <h6 className="fw-bold text-dark mb-3">
+                      📊 Algorithmic Efficiency
+                    </h6>
+                    <div className="d-flex gap-3 mb-2">
+                      <div className="bg-danger-subtle text-danger px-3 py-2 rounded fw-bold text-center flex-fill">
+                        <small
+                          className="d-block text-uppercase"
+                          style={{ fontSize: "0.7rem" }}
+                        >
+                          Time
+                        </small>
+                        {complexityParams.time}
+                      </div>
+                      <div className="bg-info-subtle text-info-emphasis px-3 py-2 rounded fw-bold text-center flex-fill">
+                        <small
+                          className="d-block text-uppercase"
+                          style={{ fontSize: "0.7rem" }}
+                        >
+                          Space
+                        </small>
+                        {complexityParams.space}
+                      </div>
+                    </div>
+                    <p
+                      className="text-muted small mb-0 mt-2"
+                      style={{ fontSize: "0.85rem" }}
+                    >
+                      {complexityParams.explanation}
+                    </p>
+                  </motion.div>
+                )}
 
                 {/* Styled AI Response Box */}
                 {(aiResponse || aiLoading) && (
@@ -227,11 +335,26 @@ function EditorPage() {
                   <h5 className="fw-bold mb-0" style={{ color: "#1e293b" }}>
                     💻 Code Editor
                   </h5>
-                  <small className="text-muted fw-semibold">
-                    {lastSaved
-                      ? `💾 Auto-saved at ${lastSaved}`
-                      : "No save yet"}
-                  </small>
+                  <div className="d-flex align-items-center gap-3">
+                    <Form.Select
+                      size="sm"
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="fw-semibold bg-light shadow-sm"
+                      style={{ width: "130px", cursor: "pointer" }}
+                    >
+                      <option value="python">Python</option>
+                      <option value="javascript">JavaScript</option>
+                      <option value="java">Java</option>
+                      <option value="cpp">C++</option>
+                    </Form.Select>
+
+                    <small className="text-muted fw-semibold">
+                      {lastSaved
+                        ? `💾 Auto-saved at ${lastSaved}`
+                        : "No save yet"}
+                    </small>
+                  </div>
                 </div>
 
                 <div
@@ -245,7 +368,7 @@ function EditorPage() {
                 >
                   <Editor
                     height="100%"
-                    language="python"
+                    language={language}
                     value={code}
                     onChange={(val) => setCode(val)}
                     theme="vs-light"
@@ -259,6 +382,15 @@ function EditorPage() {
                 </div>
 
                 <div className="d-flex justify-content-end mt-3">
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="me-2 fw-semibold px-3 shadow-sm"
+                    onClick={handleRun}
+                    disabled={loading}
+                  >
+                    {loading ? "Running..." : "▶ Run Code"}
+                  </Button>
                   <Button
                     variant="outline-danger"
                     size="sm"
@@ -285,6 +417,7 @@ function EditorPage() {
                           💻 Output
                         </Card.Header>
                         <Card.Body
+                          className="text-start"
                           style={{
                             fontFamily: "monospace",
                             whiteSpace: "pre-wrap",
@@ -302,9 +435,9 @@ function EditorPage() {
                               </span>
                             </div>
                           ) : (
-                            <span className="text-dark">
+                            <div className="text-dark">
                               {output || "⚙️ No output yet"}
-                            </span>
+                            </div>
                           )}
                         </Card.Body>
                       </Card>
