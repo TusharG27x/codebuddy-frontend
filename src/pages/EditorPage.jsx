@@ -28,7 +28,6 @@ function EditorPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [language, setLanguage] = useState("python");
 
-  // --- NEW STATES FOR COMPLEXITY ANALYZER ---
   const [complexityParams, setComplexityParams] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
 
@@ -85,7 +84,7 @@ function EditorPage() {
     }
   };
 
-  // --- NEW: Handle Complexity Analysis ---
+  // Handle Complexity Analysis
   const handleAnalyze = async () => {
     if (!code.trim() || code === "// Write your code here...") {
       toast.warn("Please write some code to analyze ⚙️");
@@ -93,7 +92,7 @@ function EditorPage() {
     }
 
     setAnalyzing(true);
-    setComplexityParams(null); // Clear previous results
+    setComplexityParams(null);
 
     try {
       const { data } = await axios.post(
@@ -102,7 +101,6 @@ function EditorPage() {
         { withCredentials: true },
       );
 
-      // Parse the strict format returned by our backend prompt
       const text = data.analysis;
       const timeMatch = text.match(/Time:\s*(.+)/);
       const spaceMatch = text.match(/Space:\s*(.+)/);
@@ -111,7 +109,7 @@ function EditorPage() {
       setComplexityParams({
         time: timeMatch ? timeMatch[1] : "Unknown",
         space: spaceMatch ? spaceMatch[1] : "Unknown",
-        explanation: expMatch ? expMatch[1] : text, // Fallback to raw text if parsing fails
+        explanation: expMatch ? expMatch[1] : text,
       });
 
       setAnalyzing(false);
@@ -132,7 +130,7 @@ function EditorPage() {
 
     setLoading(true);
     setShowOutput(true);
-    setOutput(""); // Clear old output
+    setOutput("");
 
     try {
       const { data } = await axios.post(
@@ -140,6 +138,7 @@ function EditorPage() {
         {
           code: code,
           language: language,
+          stdin: testInput,
         },
         { withCredentials: true },
       );
@@ -166,7 +165,8 @@ function EditorPage() {
     setOutput("");
     setShowOutput(false);
     setLastSaved(null);
-    setComplexityParams(null); // Also clear complexity params on reset
+    setComplexityParams(null);
+    setTestInput("");
     toast.success("Progress reset 🧹");
   };
 
@@ -226,7 +226,6 @@ function EditorPage() {
                     efficiency.
                   </Form.Text>
 
-                  {/* --- UPDATED: Side-by-side Buttons --- */}
                   <div className="d-flex gap-2">
                     <Button
                       variant="primary"
@@ -256,7 +255,6 @@ function EditorPage() {
                   </div>
                 </div>
 
-                {/* --- NEW: Complexity Results Badge --- */}
                 {complexityParams && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -295,7 +293,6 @@ function EditorPage() {
                   </motion.div>
                 )}
 
-                {/* Styled AI Response Box */}
                 {(aiResponse || aiLoading) && (
                   <div className="mt-auto">
                     <h6 className="fw-bold text-success mb-2">AI Response:</h6>
@@ -401,6 +398,7 @@ function EditorPage() {
                   </Button>
                 </div>
 
+                {/* 1. OUTPUT TERMINAL ON TOP (Original Light Style Restored) */}
                 <AnimatePresence>
                   {showOutput && (
                     <motion.div
@@ -444,6 +442,27 @@ function EditorPage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* 2. CUSTOM INPUT ON BOTTOM */}
+                <Card className="mt-4 border-0 shadow-sm bg-white">
+                  <Card.Header
+                    className="bg-white border-bottom-0 pt-3 pb-0 fw-bold"
+                    style={{ color: "#1e293b" }}
+                  >
+                    ⌨️ Custom Input (stdin)
+                  </Card.Header>
+                  <Card.Body>
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      placeholder="If your code requires input, type it here BEFORE running..."
+                      value={testInput}
+                      onChange={(e) => setTestInput(e.target.value)}
+                      className="bg-light border-0"
+                      style={{ resize: "none", fontFamily: "monospace" }}
+                    />
+                  </Card.Body>
+                </Card>
               </Card.Body>
             </Card>
           </Col>
